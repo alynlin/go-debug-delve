@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ks-apiserver
+    tier: backend
+    version: v3.0.0
+  name: ks-apiserver
+  namespace: kubesphere-system
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: ks-apiserver
+      tier: backend
+      version: v3.0.0
+  strategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2021-01-14T09:36:06Z"
+      creationTimestamp: null
+      labels:
+        app: ks-apiserver
+        tier: backend
+        version: v3.0.0
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/master
+                    operator: In
+              weight: 100
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - ks-apiserver
+              namespaces:
+                - kubesphere-system
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - command:
+            - dlv
+            - --listen=:2345
+            - --headless=true
+            - --api-version=2
+            - exec
+            - /usr/local/bin/ks-apiserver
+            - --
+            - --logtostderr=true
+          image: kubesphere/ks-apiserver-dlv:v3.0.0.beta
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 8
+            httpGet:
+              path: /kapis/version
+              port: 9090
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 15
+          name: ks-apiserver
+          ports:
+            - containerPort: 9090
+              name: http
+              protocol: TCP
+            - containerPort: 2345
+              name: delve
+              protocol: TCP
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1Gi
+            requests:
+              cpu: 20m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /var/run/docker.sock
+              name: docker-sock
+            - mountPath: /etc/kubesphere/ingress-controller
+              name: ks-router-config
+            - mountPath: /etc/kubesphere/
+              name: kubesphere-config
+            - mountPath: /etc/localtime
+              name: host-time
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      serviceAccount: kubesphere
+      serviceAccountName: kubesphere
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        - effect: NoSchedule
+          key: node-role.kubernetes.io/master
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          key: node.kubernetes.io/not-ready
+          operator: Exists
+          tolerationSeconds: 60
+        - effect: NoExecute
+          key: node.kubernetes.io/unreachable
+          operator: Exists
+          tolerationSeconds: 60
+      volumes:
+        - hostPath:
+            path: /var/run/docker.sock
+          name: docker-sock
+        - configMap:
+            defaultMode: 420
+            name: ks-router-config
+          name: ks-router-config
+        - configMap:
+            defaultMode: 420
+            name: kubesphere-config
+          name: kubesphere-config
+        - hostPath:
+            path: /etc/localtime
+          name: host-time

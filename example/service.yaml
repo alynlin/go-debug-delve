@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubernetes.io/created-by: kubesphere.io/ks-apiserver
+  labels:
+    app: ks-apiserver
+    tier: backend
+    version: v3.0.0
+  name: ks-apiserver
+  namespace: kubesphere-system
+spec:
+  clusterIP: 172.30.222.149
+  ports:
+    - name: http
+      nodePort: 30718
+      port: 80
+      targetPort: 9090
+    - name: delve
+      nodePort: 32419
+      port: 2345
+      targetPort: delve
+  selector:
+    app: ks-apiserver
+    tier: backend
+    version: v3.0.0
+  type: NodePort
