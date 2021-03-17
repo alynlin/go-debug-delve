@@ -40,5 +40,6 @@ You need to create a Remote Debug and point it to localhost:2345 since you have 
 
 
 #### 参考
-[![Debugging Go Applications Inside Kubernetes From IDE](https://hackernoon.com/debugging-go-application-inside-kubernetes-from-ide-h5683xeb)](https://hackernoon.com/debugging-go-application-inside-kubernetes-from-ide-h5683xeb)
-[![Debugging a go in k8s](https://itnext.io/debug-a-go-application-in-kubernetes-from-ide-c45ad26d8785)](https://itnext.io/debug-a-go-application-in-kubernetes-from-ide-c45ad26d8785)
+![debugging-go-application-inside-kubernetes](https://hackernoon.com/debugging-go-application-inside-kubernetes-from-ide-h5683xeb)
+<br>
+![Debugging a go in k8s](https://itnext.io/debug-a-go-application-in-kubernetes-from-ide-c45ad26d8785)
